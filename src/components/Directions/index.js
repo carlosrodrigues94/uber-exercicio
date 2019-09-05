@@ -11,10 +11,7 @@ const Directions = ({ destination, origin, onReady }) => {
     return (
         <MapViewDirections
             destination={destination}
-            origin={{
-                latitude: origin.latitude,
-                longitude: origin.longitude
-            }}
+            origin={origin}
             onReady={onReady}
             apikey="AIzaSyBchXrLQECZpq1BOjMy5gFF-dAN6IAQzvA"
             strokeWidth={3}
