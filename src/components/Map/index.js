@@ -1,16 +1,19 @@
 import React, {Component, Fragment} from 'react';
-import {View} from 'react-native';
+import {View, Image} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import {getPixelSize} from '../../utils';
 
 import Geolocation from '@react-native-community/geolocation';
-
+import Geocoder from 'react-native-geocoding';
 import Search from '../Seach';
 import Directions from '../Directions';
+import Details from '../Details';
 
 import markerImage from '../../assets/marker.png';
+import backImage from '../../assets/back.png';
 
 import {
+  Back,
   LocationBox,
   LocationTimeBox,
   LocationText,
@@ -18,13 +21,17 @@ import {
   LocationTimeTextSmall,
 } from './styles';
 
+Geocoder.init('AIzaSyBchXrLQECZpq1BOjMy5gFF-dAN6IAQzvA');
+
 export default class Map extends Component {
   state = {
     region: null,
     destination: null,
+    duration: null,
+    location: null,
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     // Componente de permissão para usar a localização do smartphone
 
     Geolocation.getCurrentPosition(
@@ -62,10 +69,12 @@ export default class Map extends Component {
       },
     });
   };
-
+  handleBack = () => {
+    this.setState({destination: null});
+  };
   render() {
     // Irá rederizar novamente toda a vez que o estado for modificado
-    const {region, destination} = this.state;
+    const {region, destination, duration} = this.state;
 
     //Usar todos os componentes depois do mapa
     return (
@@ -82,12 +91,13 @@ export default class Map extends Component {
                 origin={region}
                 destination={destination}
                 onReady={result => {
+                  this.setState({duration: Math.floor(result.duration)});
                   this.mapView.fitToCoordinates(result.coordinates, {
                     edgePadding: {
                       right: getPixelSize(50),
                       left: getPixelSize(50),
                       top: getPixelSize(50),
-                      bottom: getPixelSize(50),
+                      bottom: getPixelSize(350),
                     },
                   });
                 }}
@@ -104,17 +114,26 @@ export default class Map extends Component {
               <Marker coordinate={region} anchor={{x: 0, y: 0}}>
                 <LocationBox>
                   <LocationTimeBox>
-                    <LocationTimeText>31</LocationTimeText>
+                    <LocationTimeText>{duration}</LocationTimeText>
                     <LocationTimeTextSmall>MIN</LocationTimeTextSmall>
                   </LocationTimeBox>
-                  <LocationText>R. Guilherme Gemballa</LocationText>
+                  <LocationText>Pinheirinho</LocationText>
                 </LocationBox>
               </Marker>
             </Fragment>
           )}
         </MapView>
+        {destination ? (
+          <Fragment>
+            <Back onPress={this.handleBack}>
+              <Image source={backImage} />
+            </Back>
 
-        <Search onLocationSelected={this.handleLocationSelected} />
+            <Details />
+          </Fragment>
+        ) : (
+          <Search onLocationSelected={this.handleLocationSelected} />
+        )}
       </View>
     );
   }
